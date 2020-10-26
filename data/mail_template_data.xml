@@ -1,0 +1,29 @@
+<odoo>
+	<data>
+		<record id="email_template_for_accept_proposal" model="mail.template">
+            <field name="name">Proposal</field>
+            <field name="email_from">${object.partner_id.email | safe}</field>
+            <field name="email_to">${object.user_id and object.user_id.email or " "}</field>
+            <field name="subject">Proposal- ${object.name | safe}</field>
+            <field name="model_id" ref="model_sale_proposal"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html"><![CDATA[
+            <div style="font-family: 'Lucida Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+
+              <h4> Hello ${object.user_id.name or ''}</h4>
+              <br/>
+              <p>Please, go through below link for accept/reject Proposal.</p>
+              <br/>
+              <a class="btn btn-primary" href="${object.get_portal_url()}">Click</a>
+              <br/>
+              <p>If the link above does not work, try pasting the entire URL below into your browser's address bar:</p>
+              <br/>
+              <a href="${object.get_portal_url()}">${object.get_portal_url()}</a>
+              <br/>
+              <br/>
+            </div>     
+          ]]>
+            </field>
+        </record>
+	</data>
+</odoo>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <template id="proposal_form_assets" inherit_id="website.assets_frontend" name="Proposal Form">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/proposal_v13/static/src/js/proposal.js"/>
+        </xpath>
+    </template>
+</odoo>

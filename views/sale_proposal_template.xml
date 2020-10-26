@@ -1,0 +1,227 @@
+<odoo>
+	<template id="sale_proposal_template" name="Sale Proposal Templates">
+        <t t-call="portal.frontend_layout">
+            <div class="o_portal container mt-3" id="portal_proposal">
+                <div class="row mt16 o_portal_contract_sidebar">
+                   <t t-call="proposal_v13.sale_proposal_sidebar"/>
+                    <!-- <t t-call="proposal_v13.admission_contract_modal"/> -->
+                    <t t-call="proposal_v13.reject_proposal_modal"/>
+                    <!-- <t t-call="proposal_v13.proposal_portal_content"/> -->
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="sale_proposal_sidebar" name="Sale Proposal Side bar">
+    	<div class="col-lg-auto d-print-none">
+	        <t>
+	            <h2 class="mb-0"><b t-field="proposal.amount_total_proposed" data-id="amount_total_proposed"/> </h2>
+	        </t>
+	        <ul class="list-group list-group-flush flex-wrap flex-row flex-lg-column">
+	            <li class="list-group-item flex-grow-1">
+	                <div class="o_download_pdf btn-toolbar flex-sm-nowrap">
+	                    <div class="btn-group flex-grow-1 mr-1 mb-1">
+	                        <a class="btn btn-secondary btn-block o_download_btn" t-att-href="proposal.get_portal_url(report_type='pdf', download=True)" title="Download"><i class="fa fa-download"/> Download</a>
+	                    </div>
+	                    <div class="btn-group flex-grow-1 mb-1">
+	                        <a class="btn btn-secondary btn-block o_print_btn o_portal_invoice_print" t-att-href="proposal.get_portal_url(report_type='pdf')" id="print_invoice_report" title="Print" target="_blank"><i class="fa fa-print"/> Print</a>
+	                    </div>
+	                </div>
+	            </li>
+	
+	            <li t-if="proposal.user_id" class="list-group-item flex-grow-1">
+	                <div class="small mb-1"><strong class="text-muted">Salesperson</strong></div>
+	                <div class="row flex-nowrap">
+	                    <div class="col flex-grow-0 pr-2">
+	                        <img class="rounded-circle mr4 float-left o_portal_contact_img" t-if="proposal.user_id.image_1024" t-att-src="image_data_uri(proposal.user_id.image_1024)" alt="Contact"/>
+	                    </div>
+	                    <div class="col pl-0" style="min-width: 150px">
+	                        <span t-field="proposal.user_id" t-options='{"widget": "contact", "fields": ["name", "phone"], "no_marker": True}'/>
+	                        <a href="#discussion" class="small"><i class="fa fa-comment"></i> Send message</a>
+	                    </div>
+	                </div>
+	            </li>
+	        </ul>
+	    </div>
+	    <!-- Page content -->
+        <div id="quote_content" class="col-12 col-lg justify-content-end">
+
+            <!-- main content -->
+            <div t-attf-class="card #{'pb-5' if report_type == 'html' else ''}">
+            	<div style="margin-left:5px;">
+            		<form t-attf-action="/my/proposal/#{proposal.id}/accept?access_token=#{proposal.access_token}" name="multi_form[]" method="post" enctype="multipart/form-data" multiple="multiple">
+	                    <!-- <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/> -->
+			            <div t-call="proposal_v13.proposal_portal_content"/>
+			        </form>
+	            </div>
+
+            </div>
+            <!-- chatter -->
+            <div id="proposal_communication" class="mt-4">
+                <h2>History</h2>
+                <t t-call="portal.message_thread">
+                    <t t-set="object" t-value="proposal"/>
+                </t>
+            </div>
+        </div>
+    </template>
+
+    <template id="proposal_portal_content" name="Proposal Portal Content">
+        <!-- Intro -->
+        <div id="introduction" t-attf-class="pb-2 pt-3 #{'card-header bg-white' if report_type == 'html' else ''}">
+          <h2 class="my-0">
+                <strong>Proposal</strong>
+                <em t-esc="proposal.name"/>
+            </h2>
+        </div>
+
+        <div t-attf-class="#{'card-body' if report_type == 'html' else ''}">
+            <!-- Informations -->
+            <div id="informations">
+                <div class="row" id="so_date">
+                    <div class="mb-3 col-6">
+                        <strong>Proposal Date:</strong>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <strong t-if="proposal.partner_id"
+                        		 class="d-block mb-1">Customer</strong>
+                        <address t-field="proposal.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    </div>
+                </div>
+            </div>
+
+            <section id="details" style="page-break-inside: auto;" class="mt32">
+
+            	<h3 id="details">Proposal Pricing</h3>
+
+                <table class="table table-sm" id="proposal_table">
+                    <thead class="bg-100">
+                        <tr>
+                            <th class="text-left">Products</th>
+                            <th class="text-right">Proposed Quantity</th>
+                            <th class="text-right" >Proposed Price</th>
+                            <th class="text-right">Accepted Quantity</th>
+                             <th class="text-right" >Accepted Price</th>
+                        </tr>
+                    </thead>
+                    <tbody class="proposal_tbody">
+                        <t t-foreach="proposal.proposal_line" t-as="line">
+                            <tr t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''">
+                            	<input type="hidden" name="line_id" t-attf-class="form-control"
+                                          t-att-value="line.id" />
+                                <t t-if="not line.display_type">
+                                    <td id="product_name">
+                                        <img t-attf-src="data:image/*;base64,{{line.product_id.image_1920}}" style="width:20%;height:20%"/>
+                                        <span t-field="line.name"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <div id="quote_qty">
+                                            <span t-field="line.qty_proposed"/>
+                                        </div>
+                                    </td>
+                                    <td class="text-right">
+                                        <span class="oe_order_line_price_subtotal"
+                                        	 t-field="line.price_proposed"/>
+                                    </td>
+                                    <t t-if="proposal.is_proposal_accepted">
+                                        <td class="form">
+                                            <input type="number" name="qty_accepted" id="qty_accepted"
+                                            	 t-attf-class="form-control" readonly="True"
+                                              	 t-att-value="line.qty_proposed" required="True"/>
+                                        </td>
+                                        <td class="form">
+                                            <input type="number" id="price_accepted" name="price_accepted" t-attf-class="form-control"
+                                              t-att-value="line.price_proposed" readonly="True" required="True"/>
+                                        </td>
+                                    </t>
+                                    <t t-else="">
+                                        <td class="form">
+                                            <input type="number" name="qty_accepted" id="qty_accepted"
+                                                 t-attf-class="form-control"
+                                                 t-att-value="line.qty_proposed" required="True"/>
+                                        </td>
+                                        <td class="form">
+                                            <input type="number" id="price_accepted" name="price_accepted" t-attf-class="form-control"
+                                              t-att-value="line.price_proposed" required="True"/>
+                                        </td>
+                                    </t>
+                                </t>
+                                <t t-if="line.display_type == 'line_section'">
+                                    <td colspan="99">
+                                        <span t-field="line.name"/>
+                                    </td>
+                                    <t t-set="current_section" t-value="line"/>
+                                    <t t-set="current_subtotal" t-value="0"/>
+                                </t>
+                                <t t-if="line.display_type == 'line_note'">
+                                    <td colspan="99">
+                                        <span t-field="line.name"/>
+                                    </td>
+                                </t>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <div id="total" class="row" name="total" style="page-break-inside: avoid;">
+                    <div t-attf-class="#{'col-4' if report_type != 'html' else 'col-sm-7 col-md-5'} ml-auto">
+                        <!-- Should be replaced in master by t-call="sale.sale_order_portal_content_totals_table" -->
+                        <table class="table table-sm">
+                            <tr class="border-black" style="border-bottom:1px solid #dddddd;">
+                                <td><strong>Total proposed Amount</strong></td>
+                                <td class="text-right">
+                                    <span
+                                        data-id="amount_total_proposed"
+                                        t-field="proposal.amount_total_proposed"
+                                        t-options='{"widget": "monetary","display_currency": proposal.pricelist_id.currency_id}'
+                                    />
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <hr/>
+        <!-- bottom actions -->
+        <div class="row justify-content-center text-center d-print-none pt-1 pb-4">
+            <t t-if="not proposal.is_proposal_accepted">
+                <div class="col-sm-auto mt8">
+                     <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-times"/> Accept
+                    </button>
+                </div>
+                <div class="col-sm-auto mt8">
+                    <a role="button" class="btn btn-danger" data-toggle="modal" data-target="#modaldecline" href="#"> <i class="fa fa-times"/> Refuse</a>
+                </div>
+            </t>
+        </div>
+    </template>
+
+    <template id="reject_proposal_modal" name="Reject Proposal:Modal">
+    	<!-- modal relative to the action reject -->
+        <div role="dialog" class="modal fade" id="modaldecline">
+            <div class="modal-dialog">
+                <form id="decline" method="POST" t-attf-action="/my/proposal/#{proposal.id}/decline?access_token=#{proposal.access_token}" class="modal-content">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <header class="modal-header">
+                        <h4 class="modal-title">Reject This Proposal</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">&amp;times;</button>
+                    </header>
+                    <main class="modal-body">
+                        <p>
+                            Tell us why you are refusing proposal?
+                        </p>
+                        <textarea rows="4" name="decline_message" required="" placeholder="Your feedback..." class="form-control" />
+                    </main>
+                    <footer class="modal-footer">
+                        <button type="submit" t-att-id="proposal.id" class="btn btn-danger"><i class="fa fa-times"></i> Refuse</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </footer>
+                </form>
+            </div>
+        </div>
+    </template>
+</odoo>

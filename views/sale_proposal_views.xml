@@ -1,0 +1,148 @@
+<odoo>
+  <data>
+
+    <!-- Proposal -->
+      <record id="view_sale_proposal_tree" model="ir.ui.view">
+          <field name="name">sale.proposal.tree</field>
+          <field name="model">sale.proposal</field>
+          <field name="arch" type="xml">
+              <tree>
+                  <field name="name"/>
+                  <field name="partner_id"/>
+                  <field name="state"/>
+              </tree>
+          </field>
+      </record>
+
+      <record id="view_sale_proposal_form" model="ir.ui.view">
+          <field name="name">sale.proposal.form</field>
+          <field name="model">sale.proposal</field>
+          <field name="arch" type="xml">
+              <form>
+                <header>
+                  <button name="proposal_send" states="draft" type="object" string="Sent"/>
+                  <button name="proposal_confirm" states="sent" type="object" string="Confirm"/>
+                  <field name="state" widget="statusbar" statusbar_visible="draft,sent,confirm,cancel"/>
+                </header>
+                  <sheet>
+                    <div class="oe_button_box" name="button_box">
+                     <!--  <button name="preview_sale_proposal" type="object" class="oe_stat_button"
+                               icon="fa-globe icon">
+                          <div class="o_field_widget o_stat_info">
+                              <span class="o_stat_text">Proposal</span>
+                              <span class="o_stat_text">Preview</span>
+                          </div>
+                      </button> -->
+                    </div>
+                      <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                      </div>
+                      <group>
+                        <group>
+                          <field name="partner_id" widget="res_partner_many2one"
+                           context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'show_vat': True}" options='{"always_reload": True}'/>
+                          <field name="user_id" options="{'no_open':True,'no_create': True}" readonly="1"/>
+                          <field name="pricelist_id" groups="product.group_product_pricelist" options="{'no_open':True,'no_create': True}"/>
+                          <field name="currency_id" invisible="1"/>
+                          <field name="is_proposal_accepted" readonly="1"/>
+                        </group>
+                      </group>
+                      <notebook>
+                          <page name="proposal_lines" string="Proposal Lines">
+                              <field name="proposal_line" attrs="{'readonly': [('state', 'in', ('confirm','cancel'))]}" widget="section_and_note_one2many"
+                                mode="tree,kanban">
+                                  <tree editable="bottom">
+                                    <control>
+                                        <create name="add_product_control" string="Add a product"/>
+                                        <create name="add_section_control" string="Add a section" context="{'default_display_type': 'line_section'}"/>
+                                        <create name="add_note_control" string="Add a note" context="{'default_display_type': 'line_note'}"/>
+                                    </control>
+                                    <field
+                                        name="product_id"
+                                        context="{
+                                            'partner_id': parent.partner_id,
+                                            'quantity': qty_proposed,
+                                            'pricelist': parent.pricelist_id,
+                                            'uom':product_uom,
+                                            'default_lst_price': price_proposed,
+                                            'default_description_sale': name}"
+                                        options="{'no_open': True}"
+                                        force_save="1" widget="product_configurator"/>
+                                    <field name="name"/>
+                                    <field
+                                        name="product_uom"
+                                        force_save="1"
+                                        string="UoM"
+                                        groups="uom.group_uom"
+                                        options='{"no_open": True}'
+                                        optional="show"
+                                    />
+                                    <field name="qty_proposed"/>
+                                    <field name="qty_accepted"/>
+                                    <field name="price_proposed"/>
+                                    <field name="price_accepted"/>
+                                    <field name="subtotal_price_proposed"/>
+                                    <field name="subtotal_price_accepted"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="display_type" invisible="1"/>
+                                    <field name="product_uom_category_id" invisible="1"/>
+                                  </tree>
+                                  <form>
+                                      <sheet>
+                                          <group col="4">
+                                              <field name="product_id"
+                                                  options="{'no_open': True}"
+                                                  force_save="1"/>
+                                              <field name="name"/>
+                                              <field name="qty_proposed"/>
+                                              <field name="qty_accepted"/>
+                                              <field name="price_proposed"/>
+                                              <field name="price_accepted"/>
+                                          </group>
+                                      </sheet>
+                                  </form>
+                              </field>
+                              <group name="note_group" col="6">
+                                <group class="oe_subtotal_footer oe_right" colspan="2" name="grand_total">
+                                  <field name="amount_total_proposed" widget='monetary'
+                                          options="{'currency_field': 'currency_id'}"/>
+                                  <field name="amount_total_accepted" widget='monetary'
+                                         options="{'currency_field': 'currency_id'}"/>
+                                </group>
+                                <div class="oe_clear"/>
+                              </group>
+                          </page>
+                      </notebook>
+                  </sheet>
+                  <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                  </div>
+              </form>
+          </field>
+      </record>
+
+      <record id="action_sale_proposal_view" model="ir.actions.act_window">
+          <field name="name">Proposals</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">sale.proposal</field>
+          <field name="view_mode">tree,form</field>
+          <field name="view_id" ref="view_sale_proposal_tree"/>
+          <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Create a new sale proposal
+              </p>
+          </field>
+      </record>
+
+    <!-- Top menu item -->
+    <menuitem name="Proposal" id="proposal_menu_root" sequence="0"/>
+
+    <!-- actions -->
+    <menuitem name="Proposal" id="proposal_submenu" parent="proposal_menu_root"
+              action="action_sale_proposal_view" sequence="1"/>
+  </data>
+</odoo>

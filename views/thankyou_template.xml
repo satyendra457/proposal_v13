@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- View Thank Payment Pages -->
+
+    <record id="view_thank_proposal_page" model="website.page">
+        <field name="name">Thank You</field>
+        <field name="url">/page/thank_you/</field>
+        <field name="website_published">True</field>
+        <field name="type">qweb</field>
+        <field name="key">proposal_v13.thank_page_view</field>
+        <field name="arch" type="xml">
+            <t name="Debug" t-name="website.thank_page_view">
+                <t t-call="website.layout">
+                    <div class="rgwqi_data">
+                        <title>Thanks</title>
+                        <div id="wrap">
+                            <div class="container card bg-primary">
+                                <div class="jumbotron text-center card-body">
+                                  <h1 class="display-5">Thank you for Accepting Proposal!</h1>
+                                  <hr/>
+                                  <p class="lead"><strong>Your accepted amount is -</strong>
+                                     <b><span t-esc="proposal.amount_total_accepted"></span></b></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </field>
+    </record>
+
+    <template id="redirect_fail_page" name="Failure Code Page">
+        <div>
+              <span>Sorry, Accepted value always less than or equal proposed value.</span>
+        </div>
+        <script>
+            setTimeout(function(){
+                window.location.href = '/';
+            }, 1500)
+        </script>
+    </template>
+</odoo>
+
